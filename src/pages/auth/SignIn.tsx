@@ -5,22 +5,79 @@ import { useState } from "react"
 import bgImg from '../../assets/backgroundImg.jpg'
 import Logoicon from "../../components/icons/Logoicon";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 
 
 function SignIn() {
-    const [dob, setDob] = useState(null);
-    const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [otp, setOtp] = useState("");
+    const [showOtp, setShowOtp] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showOtpField, setShowOtpField] = useState(false);
+    const [message, setMessage] = useState('');
 
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
+    const navigate=useNavigate();
+
+    const handleClickShowPassword = () => setShowOtp((show) => !show);
 
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
     };
+    // const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    //     event.preventDefault();
+    // };
 
-    const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
+    const handleGetOtp = async () => {
+        setIsLoading(true);
+        setMessage('');
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/signin', {
+                email,
+            });
+            setMessage(response.data.message);
+            setShowOtpField(true);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setMessage(error.response?.data?.message || "An error occurred");
+            } else {
+                const genericError = error as Error;
+                console.log(genericError.message);
+                setMessage(genericError.message || "An unexpected error occurred");
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleSignIn = async () => {
+        setIsLoading(true);
+        setMessage("");
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/verify-signin', {
+                email,
+                otp
+            });
+            setMessage(response.data.message);
+            
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            navigate('/');
+
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                // console.log(error.response?.data?.message);
+                setMessage(error.response?.data?.message || "An error occurred");
+            } else {
+                // This is a generic error
+                const genericError = error as Error;
+                console.log(genericError.message);
+                setMessage(genericError.message || "An unexpected error occurred");
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
 
@@ -46,41 +103,70 @@ function SignIn() {
                         <div>
                             <form className="py-1">
 
-                                <div className="pt-1 pb-3"><TextField
-                                    // sx={{
-                                    //     "& .MuiOutlinedInput-root": {
-                                    //         borderRadius: "1rem", // rounded-2xl (~16px)
-
-                                    //     },
-                                    // }} 
-                                    id="email" label="Email" variant="outlined" className="w-full" /></div>
+                                <div className="pt-1 pb-3">
+                                    <TextField
+                                        id="email" 
+                                        label="Email" 
+                                        variant="outlined" 
+                                        className="w-full" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={showOtpField} 
+                                    />
+                                </div>
+                                {/* {showOtpField && ( */}
                                 <div className="pt-1 pb-3">
                                     <FormControl className="w-full" variant="outlined">
                                         <InputLabel htmlFor="outlined-adornment-password">OTP</InputLabel>
                                         <OutlinedInput
                                             id="outlined-adornment-password"
-                                            type={showPassword ? 'text' : 'password'}
+                                            type={showOtp ? 'text' : 'password'}
                                             endAdornment={
                                                 <InputAdornment position="end">
                                                     <IconButton
-                                                        aria-label={showPassword ? 'hide the password' : 'display the password'}
+                                                        aria-label={showOtp ? 'hide the password' : 'display the password'}
                                                         onClick={handleClickShowPassword}
                                                         onMouseDown={handleMouseDownPassword}
                                                         edge="end"
                                                     >
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        {showOtp ? <VisibilityOff /> : <Visibility />}
                                                     </IconButton>
                                                 </InputAdornment>
                                             }
                                             label="OTP"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            disabled={!showOtpField} 
                                         />
                                     </FormControl>
                                 </div>
+                                {/* )} */}
                                 <div className="pt-1 pb-3">
-                                    <button className="w-full rounded-md bg-[#367AFF] py-2 px-4 border border-transparent text-center text-[16px] md:text-[18px]  text-white font-[600] transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" type="button">
-                                        Get OTP
-                                    </button>
+                                   {!showOtpField ? (
+                                        <button
+                                            className="w-full rounded-md bg-[#367AFF] py-2 px-4 border border-transparent text-center text-[16px] md:text-[18px] text-white font-[600] transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                                            type="button"
+                                            onClick={handleGetOtp}
+                                            disabled={isLoading || !email}
+                                        >
+                                            {isLoading ? "Sending OTP..." : "Get OTP"}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="w-full rounded-md bg-[#367AFF] py-2 px-4 border border-transparent text-center text-[16px] md:text-[18px] text-white font-[600] transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                                            type="button"
+                                            disabled={isLoading || !otp}
+                                            onClick={handleSignIn}
+                                        >
+                                            {isLoading ? "Verifying..." : "Sign In"}
+                                        </button>
+                                    )}
                                 </div>
+                                {message && (
+                                    <div className={`pt-1 pb-3 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                                        {message}
+                                    </div>
+                                )}
                             </form>
                             <div>
                                 <span className="text-[14px] md:text-[18px] font-[400]">Need an account? </span>
