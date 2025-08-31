@@ -3,7 +3,7 @@ import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
 import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom';
 import Home from './pages/home/Home';
-import ProtectedRoute from './utils/protectedRoutes';
+import ProtectedRoute from './utils/ProtectedRoutes';
 import AuthRoute from './utils/AuthRoutes';
 
 
