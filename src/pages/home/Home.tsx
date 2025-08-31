@@ -1,4 +1,4 @@
-import { useNavigate, useNavigation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Logoicon from "../../components/icons/Logoicon";
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { useEffect, useState } from "react";
@@ -25,7 +25,13 @@ const style = {
 };
 
 function Home() {
+  const navigate = useNavigate()
   const token = localStorage.getItem('token');
+  if (!token) {
+      navigate('/login');
+      return;
+    }
+  console.log(token)
   const storedUser = localStorage.getItem('user');
   let user = null;
   if (storedUser) {
@@ -59,7 +65,7 @@ function Home() {
     setMessage('');
   }
 
-  const navigate = useNavigate()
+  
   const signOut = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -70,6 +76,9 @@ function Home() {
     setIsNotesLoading(true);
     try {
       const response = await axios.get(`http://localhost:5000/api/note/getall/${user.id}`, {
+         headers: {
+            Authorization: `Bearer ${token}`
+          }
       });
       setNotes(response.data.data)
     } catch (error) {
@@ -88,9 +97,15 @@ function Home() {
   const handleCreateNote = async () => {
     setIsCreatingNote(true);
     try {
-      const response = await axios.post(`http://localhost:5000/api/note/create/${user.id}`, {
-        title: newNoteTitle,
-      });
+      const response = await axios.post(`http://localhost:5000/api/note/create/${user.id}`, 
+      { title: newNoteTitle,},
+      {
+        headers: {
+            Authorization: `Bearer ${token}`
+          },
+      }
+    
+    );
       if (response.status === 201) {
         setNewNoteTitle('');
         handleClose();
@@ -112,6 +127,9 @@ function Home() {
   const handleDeleteNote = async (noteId: string) => {
     try {
       const response = await axios.delete(`http://localhost:5000/api/note/delete/${noteId}`, {
+         headers: {
+            Authorization: `Bearer ${token}`
+          }
       });
 
       if (response.status === 201) {

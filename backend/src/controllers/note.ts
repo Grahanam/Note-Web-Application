@@ -1,9 +1,10 @@
 import { Request,Response } from "express";
 import Note from '../models/Note';
 import User from "../models/User"
+import { authenticateToken } from "../middleware/authenticateToken";
 
 // Create Note
-export const createNote = async (req: Request, res: Response) => {
+export const createNote =[authenticateToken, async (req: Request, res: Response) => {
   try {
     const { title } = req.body;
     const { userId } = req.params;
@@ -30,10 +31,10 @@ export const createNote = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error });
   }
-};
+}];
 
 //Delete Note
-export const deleteNote = async (req: Request, res: Response) => {
+export const deleteNote = [authenticateToken,async (req: Request, res: Response) => {
   try {
     const { noteId } = req.params;
     
@@ -51,10 +52,10 @@ export const deleteNote = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error });
   }
-};
+}];
 
 //Get Notes by UserId
-export const getNotes = async (req: Request, res: Response) => {
+export const getNotes =[authenticateToken, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
@@ -74,5 +75,5 @@ export const getNotes = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error });
   }
-};
+}];
 
