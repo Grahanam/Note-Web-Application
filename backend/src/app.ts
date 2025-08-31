@@ -6,6 +6,7 @@ var cors = require('cors')
 
 
 import authRoutes from "./routes/auth";
+import noteRoutes from "./routes/note";
 
 const mongodbUrl = process.env.mongodb_url
 
@@ -17,6 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/auth',authRoutes)
+app.use('/api/note',noteRoutes)
 
 mongoose.connect(mongodbUrl as string).then(() => {
     console.log('Connected to MongoDB');
