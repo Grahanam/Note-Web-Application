@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { Dayjs } from "dayjs";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 function SignUp() {
     const [name, setName] = useState("");
@@ -58,7 +58,7 @@ function SignUp() {
         setIsLoading(true);
         setMessage('');
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/signup', {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, {
                 email,
                 dob,
                 name
@@ -83,7 +83,7 @@ function SignUp() {
         setIsLoading(true);
         setMessage("");
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/verify-signup', {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/verify-signup`, {
                 email,
                 otp
             });

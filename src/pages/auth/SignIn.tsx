@@ -8,7 +8,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 function SignIn() {
     const [email, setEmail] = useState("");
@@ -25,15 +25,12 @@ function SignIn() {
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
     };
-    // const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    //     event.preventDefault();
-    // };
 
     const handleGetOtp = async () => {
         setIsLoading(true);
         setMessage('');
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/signin', {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/signin`, {
                 email,
             });
             setMessage(response.data.message);
@@ -55,7 +52,7 @@ function SignIn() {
         setIsLoading(true);
         setMessage("");
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/verify-signin', {
+            const response = await axios.post(`${API_BASE_URL}/api/auth/verify-signin`, {
                 email,
                 otp
             });

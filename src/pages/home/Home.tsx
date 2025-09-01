@@ -24,13 +24,15 @@ const style = {
   p: 4,
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 function Home() {
   const navigate = useNavigate()
   const token = localStorage.getItem('token');
   if (!token) {
-      navigate('/login');
-      return;
-    }
+    navigate('/login');
+    return;
+  }
   console.log(token)
   const storedUser = localStorage.getItem('user');
   let user = null;
@@ -65,7 +67,7 @@ function Home() {
     setMessage('');
   }
 
-  
+
   const signOut = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -75,10 +77,10 @@ function Home() {
   const handleGetNotes = async () => {
     setIsNotesLoading(true);
     try {
-      const response = await axios.get(`http://localhost:5000/api/note/getall/${user.id}`, {
-         headers: {
-            Authorization: `Bearer ${token}`
-          }
+      const response = await axios.get(`${API_BASE_URL}/api/note/getall/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       setNotes(response.data.data)
     } catch (error) {
@@ -97,15 +99,15 @@ function Home() {
   const handleCreateNote = async () => {
     setIsCreatingNote(true);
     try {
-      const response = await axios.post(`http://localhost:5000/api/note/create/${user.id}`, 
-      { title: newNoteTitle,},
-      {
-        headers: {
+      const response = await axios.post(`${API_BASE_URL}/api/note/create/${user.id}`,
+        { title: newNoteTitle, },
+        {
+          headers: {
             Authorization: `Bearer ${token}`
           },
-      }
-    
-    );
+        }
+
+      );
       if (response.status === 201) {
         setNewNoteTitle('');
         handleClose();
@@ -126,10 +128,10 @@ function Home() {
 
   const handleDeleteNote = async (noteId: string) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/note/delete/${noteId}`, {
-         headers: {
-            Authorization: `Bearer ${token}`
-          }
+      const response = await axios.delete(`${API_BASE_URL}/api/note/delete/${noteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (response.status === 201) {
@@ -154,7 +156,7 @@ function Home() {
   }, [])
 
   return (
-    <div className="md:flex md:h-full p-3">
+    <div className="md:h-full p-3">
       <div className="h-full p-4">
         <div className="logo flex place-items-center justify-between">
           <div className="flex place-items-center">
@@ -171,7 +173,7 @@ function Home() {
           <div className="w-full px-4">
             <div className="border-1 rounded-2xl border-gray-200 p-4 flex flex-col items-start justify-center my-12 shadow-xl ">
 
-              <div className="text-[22px] font-[700] md:text-[32px] text-[#232323]">Welcome, {user.email}</div>
+              <div className="text-[22px] font-[700] md:text-[32px] text-[#232323]">Welcome, {user.name}</div>
 
               <div className="text-[18px] md:text-[22px] font-[400] text-[#969696] py-4">Email: {user.email}</div>
             </div>
@@ -225,23 +227,27 @@ function Home() {
             <div className="my-4">
               <div className="text-[20px] md:text-[25px] font-[400] text-left mb-3">Notes</div>
               <div>
-                {notes.length === 0 ? (
-                  <p className="text-gray-500">No notes found.</p>
-                ) : (
-                  notes.map((note, index) => (
-                    <div
-                      key={index}
-                      className="border rounded-2xl border-gray-200 p-4 flex items-start justify-between shadow-lg mb-4"
-                    >
-                      <h3 className="text-[16px] md:text-[20px] font-[400]">
-                        {note.title}
-                      </h3>
-                      <div onClick={() => handleDeleteNote(note._id)}>
-                        <DeleteOutlineOutlinedIcon fontSize="small" />
-                      </div>
-                    </div>
-                  ))
-                )}
+                {isNotesLoading ? <>Loading...</> :
+                  <>
+                    {notes.length === 0 ? (
+                      <p className="text-gray-500">No notes found.</p>
+                    ) : (
+                      notes.map((note, index) => (
+                        <div
+                          key={index}
+                          className="border rounded-2xl border-gray-200 p-4 flex items-start justify-between shadow-lg mb-4"
+                        >
+                          <h3 className="text-[16px] md:text-[20px] font-[400]">
+                            {note.title}
+                          </h3>
+                          <div onClick={() => handleDeleteNote(note._id)}>
+                            <DeleteOutlineOutlinedIcon fontSize="small" />
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </>
+                }
               </div>
             </div>
           </div>

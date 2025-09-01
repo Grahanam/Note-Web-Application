@@ -2,9 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "dev": "nodemon -I --exec node --experimental-specifier-resolution=node  --loader ts-node/esm ./src/app.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -20,7 +21,9 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -29,7 +32,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
     "@types/nodemailer": "^7.0.1",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2"
   }
 }
