@@ -11,7 +11,6 @@ import nodemailer from 'nodemailer';
 // Signup - Send OTP
 export const signup = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
     const { name, email, dob } = req.body;
 
     // Check if user already exists (verified user)
@@ -51,7 +50,6 @@ export const signup = async (req: Request, res: Response) => {
       message: 'OTP sent to your email',
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -60,7 +58,6 @@ export const signup = async (req: Request, res: Response) => {
 export const verifySignup = async (req: Request, res: Response) => {
   try {
     const { email, otp } = req.body;
-    console.log(email,otp)
     // Find the temporary user
     const tempUser = await TempUser.findOne({ email });
     if (!tempUser) {
@@ -110,6 +107,7 @@ export const verifySignup = async (req: Request, res: Response) => {
       token,
       user: {
         id: user._id,
+        name:user.name,
         email: user.email,
         dob: user.dob,
       },
@@ -190,6 +188,7 @@ export const verifySignin = async (req: Request, res: Response) => {
       token,
       user: {
         id: user._id,
+        name:user.name,
         email: user.email,
         dob: user.dob,
       },

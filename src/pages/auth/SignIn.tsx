@@ -1,6 +1,6 @@
-import { FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
+import { Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import bgImg from '../../assets/backgroundImg.jpg'
 import Logoicon from "../../components/icons/Logoicon";
@@ -17,14 +17,28 @@ function SignIn() {
     const [isLoading, setIsLoading] = useState(false);
     const [showOtpField, setShowOtpField] = useState(false);
     const [message, setMessage] = useState('');
+    const [resendTimer, setResendTimer] = useState(0);
+    const [canResend, setCanResend] = useState(true);
 
-    const navigate=useNavigate();
+    const navigate = useNavigate();
 
     const handleClickShowPassword = () => setShowOtp((show) => !show);
 
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
     };
+
+    const startResendTimer = () => {
+        setResendTimer(180); // 3 minutes in seconds
+        setCanResend(false);
+    };
+
+    const showMessage = (message: string) => {
+        setMessage(message);
+        setTimeout(() => {
+            setMessage("");
+        }, 2000);
+    }
 
     const handleGetOtp = async () => {
         setIsLoading(true);
@@ -33,15 +47,15 @@ function SignIn() {
             const response = await axios.post(`${API_BASE_URL}/api/auth/signin`, {
                 email,
             });
-            setMessage(response.data.message);
+            showMessage(response.data.message);
             setShowOtpField(true);
+            startResendTimer();
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                setMessage(error.response?.data?.message || "An error occurred");
+                showMessage(error.response?.data?.message || "An error occurred");
             } else {
                 const genericError = error as Error;
-                console.log(genericError.message);
-                setMessage(genericError.message || "An unexpected error occurred");
+                showMessage(genericError.message || "An unexpected error occurred");
             }
         } finally {
             setIsLoading(false);
@@ -56,32 +70,45 @@ function SignIn() {
                 email,
                 otp
             });
-            setMessage(response.data.message);
-            
+            showMessage(response.data.message);
+
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
             navigate('/');
 
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                // console.log(error.response?.data?.message);
-                setMessage(error.response?.data?.message || "An error occurred");
+                showMessage(error.response?.data?.message || "An error occurred");
             } else {
-                // This is a generic error
                 const genericError = error as Error;
-                console.log(genericError.message);
-                setMessage(genericError.message || "An unexpected error occurred");
+                showMessage(genericError.message || "An unexpected error occurred");
             }
         } finally {
             setIsLoading(false);
         }
     };
 
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
+    useEffect(() => {
+        let interval: number | undefined;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (resendTimer === 0 && !canResend) {
+            setCanResend(true);
+        }
+        return () => clearInterval(interval);
+    }, [resendTimer, canResend]);
 
     return (
         <div className="md:flex md:h-full p-3">
-            <div className="md:w-[40%] h-full p-4">
+            <div className="md:w-[40%] h-full md:p-4">
                 <div className="logo md:h-[5%] flex justify-center place-items-center md:justify-start">
                     <Logoicon />
                     <div className="text-[24px] font-[600]">
@@ -102,44 +129,59 @@ function SignIn() {
 
                                 <div className="pt-1 pb-3">
                                     <TextField
-                                        id="email" 
-                                        label="Email" 
-                                        variant="outlined" 
-                                        className="w-full" 
+                                        id="email"
+                                        label="Email"
+                                        variant="outlined"
+                                        className="w-full"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        disabled={showOtpField} 
+                                        disabled={showOtpField}
                                     />
                                 </div>
-                                {/* {showOtpField && ( */}
-                                <div className="pt-1 pb-3">
-                                    <FormControl className="w-full" variant="outlined">
-                                        <InputLabel htmlFor="outlined-adornment-password">OTP</InputLabel>
-                                        <OutlinedInput
-                                            id="outlined-adornment-password"
-                                            type={showOtp ? 'text' : 'password'}
-                                            endAdornment={
-                                                <InputAdornment position="end">
-                                                    <IconButton
-                                                        aria-label={showOtp ? 'hide the password' : 'display the password'}
-                                                        onClick={handleClickShowPassword}
-                                                        onMouseDown={handleMouseDownPassword}
-                                                        edge="end"
-                                                    >
-                                                        {showOtp ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            }
-                                            label="OTP"
-                                            value={otp}
-                                            onChange={(e) => setOtp(e.target.value)}
-                                            disabled={!showOtpField} 
-                                        />
-                                    </FormControl>
+                                {showOtpField && (
+                                    <div className="pb-2">
+                                        <FormControl className="w-full" variant="outlined">
+                                            <InputLabel htmlFor="outlined-adornment-password">OTP</InputLabel>
+                                            <OutlinedInput
+                                                id="outlined-adornment-password"
+                                                type={showOtp ? 'text' : 'password'}
+                                                endAdornment={
+                                                    <InputAdornment position="end">
+                                                        <IconButton
+                                                            aria-label={showOtp ? 'hide the password' : 'display the password'}
+                                                            onClick={handleClickShowPassword}
+                                                            onMouseDown={handleMouseDownPassword}
+                                                            edge="end"
+                                                        >
+                                                            {showOtp ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>
+                                                }
+                                                label="OTP"
+                                                value={otp}
+                                                onChange={(e) => setOtp(e.target.value)}
+                                                disabled={!showOtpField}
+                                            />
+                                        </FormControl>
+                                        <div className="w-full text-left p-2">
+                                            {canResend ? <>
+                                                <span onClick={handleGetOtp} className="cursor-pointer text-[14px] md:text-[18px] font-[400] text-[#367AFF] underline">Resend Otp</span></>
+                                                :
+                                                <>
+                                                    <span className="text-[14px] md:text-[18px] font-[400] text-gray-500">
+                                                        Resend OTP in {formatTime(resendTimer)}
+                                                    </span></>}
+                                        </div>
+                                    </div>
+
+                                )}
+                                <div className="flex flex-start flex-col">
+
+                                    <FormControlLabel control={<Checkbox />} label="Keep me logged in" />
                                 </div>
-                                {/* )} */}
+
                                 <div className="pt-1 pb-3">
-                                   {!showOtpField ? (
+                                    {!showOtpField ? (
                                         <button
                                             className="w-full rounded-md bg-[#367AFF] py-2 px-4 border border-transparent text-center text-[16px] md:text-[18px] text-white font-[600] transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                                             type="button"
@@ -159,11 +201,13 @@ function SignIn() {
                                         </button>
                                     )}
                                 </div>
-                                {message && (
-                                    <div className={`pt-1 pb-3 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                                        {message}
-                                    </div>
-                                )}
+                                <div className="h-5">
+                                    {message && (
+                                        <div className={`pt-1 pb-3 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                                            {message}
+                                        </div>
+                                    )}
+                                </div>
                             </form>
                             <div>
                                 <span className="text-[14px] md:text-[18px] font-[400]">Need an account? </span>

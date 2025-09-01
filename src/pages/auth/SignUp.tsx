@@ -54,6 +54,13 @@ function SignUp() {
         },
     });
 
+    const showMessage = (message: string) => {
+        setMessage(message);
+        setTimeout(() => {
+            setMessage("");
+        }, 2000);
+    }
+
     const handleGetOtp = async () => {
         setIsLoading(true);
         setMessage('');
@@ -63,15 +70,14 @@ function SignUp() {
                 dob,
                 name
             });
-            setMessage(response.data.message);
+            showMessage(response.data.message);
             setShowOtpField(true);
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                setMessage(error.response?.data?.message || "An error occurred");
+                showMessage(error.response?.data?.message || "An error occurred");
             } else {
                 const genericError = error as Error;
-                console.log(genericError.message);
-                setMessage(genericError.message || "An unexpected error occurred");
+                showMessage(genericError.message || "An unexpected error occurred");
             }
         } finally {
             setIsLoading(false);
@@ -87,7 +93,7 @@ function SignUp() {
                 email,
                 otp
             });
-            setMessage(response.data.message);
+            showMessage(response.data.message);
             // Store token and user data
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -95,13 +101,10 @@ function SignUp() {
 
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                // console.log(error.response?.data?.message);
-                setMessage(error.response?.data?.message || "An error occurred");
+                showMessage(error.response?.data?.message || "An error occurred");
             } else {
-                // This is a generic error
                 const genericError = error as Error;
-                console.log(genericError.message);
-                setMessage(genericError.message || "An unexpected error occurred");
+                showMessage(genericError.message || "An unexpected error occurred");
             }
         } finally {
             setIsLoading(false);
@@ -115,7 +118,7 @@ function SignUp() {
 
     return (
         <div className="md:flex md:h-full p-3">
-            <div className="md:w-[40%] h-full p-4">
+            <div className="md:w-[40%] h-full md:p-4">
                 <div className="logo md:h-[5%] flex justify-center place-items-center md:justify-start">
                     <Logoicon />
                     <div className="text-[24px] font-[600]">
@@ -211,11 +214,13 @@ function SignUp() {
                                         </button>
                                     )}
                                 </div>
-                                {message && (
-                                    <div className={`pt-1 pb-3 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                                        {message}
-                                    </div>
-                                )}
+                                <div className="h-5">
+                                    {message && (
+                                        <div className={`pt-1 pb-3 text-center ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                                            {message}
+                                        </div>
+                                    )}
+                                </div>
                             </form>
                             <div>
                                 <span className="text-[14px] md:text-[18px] font-[400]">Already have a account? </span>

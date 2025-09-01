@@ -33,7 +33,7 @@ function Home() {
     navigate('/login');
     return;
   }
-  console.log(token)
+  
   const storedUser = localStorage.getItem('user');
   let user = null;
   if (storedUser) {
@@ -157,7 +157,7 @@ function Home() {
 
   return (
     <div className="md:h-full p-3">
-      <div className="h-full p-4">
+      <div className="h-full p-1 md:p-4">
         <div className="logo flex place-items-center justify-between">
           <div className="flex place-items-center">
             <Logoicon />
@@ -170,12 +170,12 @@ function Home() {
           </div>
         </div>
         <div className="md:flex w-full md:justify-center md:items-center">
-          <div className="w-full px-4">
-            <div className="border-1 rounded-2xl border-gray-200 p-4 flex flex-col items-start justify-center my-12 shadow-xl ">
+          <div className="md:min-w-2xl lg:min-w-2xl md:px-4">
+            <div className="border-1 rounded-2xl border-gray-200 p-4 flex flex-col items-start justify-center my-12 shadow-xl">
 
-              <div className="text-[22px] font-[700] md:text-[32px] text-[#232323]">Welcome, {user.name}</div>
+              <p className="text-[22px] font-[700] md:text-[32px] text-[#232323] ">Welcome, {user.name}</p>
 
-              <div className="text-[18px] md:text-[22px] font-[400] text-[#969696] py-4">Email: {user.email}</div>
+              <p className="text-[18px] md:text-[22px] font-[400] text-[#969696] py-4 ">Email: {user.email}</p>
             </div>
 
             <div className="mt-10">
