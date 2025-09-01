@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "nodemon -I --exec node --experimental-specifier-resolution=node  --loader ts-node/esm ./src/app.ts",
+    "dev": "nodemon src/app.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
